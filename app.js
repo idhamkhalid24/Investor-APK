@@ -277,7 +277,8 @@ function renderTabBar() {
   return `
     <div class="tabs mb-4">
       <div class="tab ${state.page === 'dashboard' ? 'active' : ''}" onclick="go('dashboard')"><i class="fas fa-chart-pie mb-1" style="display:block"></i> Dashboard</div>
-      <div class="tab ${state.page === 'history' ? 'active' : ''}" onclick="go('history')"><i class="fas fa-hand-holding-dollar mb-1" style="display:block"></i> Riwayat Pencairan</div>
+      <div class="tab ${state.page === 'history' ? 'active' : ''}" onclick="go('history')"><i class="fas fa-hand-holding-dollar mb-1" style="display:block"></i> Riwayat</div>
+      <div class="tab ${state.page === 'info' ? 'active' : ''}" onclick="go('info')"><i class="fas fa-circle-info mb-1" style="display:block"></i> Cara Kerja</div>
     </div>
   `;
 }
@@ -291,6 +292,7 @@ function render() {
   let body = '';
   if (state.page === 'dashboard') body = renderDashboard();
   else if (state.page === 'history') body = renderHistory();
+  else if (state.page === 'info') body = renderInfo();
   
   $('app').innerHTML = `
     <div class="dashboard">
@@ -375,7 +377,7 @@ function renderDashboard() {
     <div class="row mb-2">
       <h2 class="text-main">Rincian Batch</h2>
       <div class="row" style="gap:1rem">
-        <select class="input" style="padding: 0.5rem; width: auto;" onchange="state.statsRange=Number(this.value); refreshStats()">
+        <select class="input" style="padding: 0.5rem 2.5rem 0.5rem 1rem; width: auto; font-weight:800; font-size:0.9rem" onchange="state.statsRange=Number(this.value); refreshStats()">
           ${[1,2,3,6,12].map(n => `<option value="${n}" ${state.statsRange===n?'selected':''}>${n} Bulan Terakhir</option>`).join('')}
         </select>
         <button class="btn" onclick="refreshStats()" title="Refresh Data"><i class="fas fa-rotate"></i></button>
@@ -474,6 +476,38 @@ function renderHistory() {
         <div style="font-weight:800">Belum ada riwayat pencairan.</div>
       </div>
     `}
+  `;
+}
+
+function renderInfo() {
+  return `
+    <h2 class="text-main mb-3">Cara Kerja & Bagi Hasil</h2>
+    
+    <div class="card variant-3 mb-3">
+      <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-handshake"></i> 1. Sistem Kerja Sama</h2>
+      <p style="font-size:0.95rem; font-weight:600">Kamu bertindak sebagai pemodal (investor) yang menyuntikkan dana pada sebuah <b>Batch Proyek</b>. Total Modal Proyek adalah gabungan dari modal kamu dan investor lain di batch tersebut. Persentase saham kamu dihitung dari (Modal Kamu / Total Modal Proyek).</p>
+    </div>
+
+    <div class="card variant-1 mb-3">
+      <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-chart-pie"></i> 2. Skema Bagi Hasil (70:30)</h2>
+      <p style="font-size:0.95rem; font-weight:600; margin-bottom: 12px">Omzet proyek yang didapat akan dikurangi dengan Modal Barang (HPP) untuk mendapatkan <b>Keuntungan Bersih (Net Profit)</b>.</p>
+      <div style="background:#FFF; padding:12px; border-radius:8px; border:var(--b-width) solid var(--border); font-weight:700; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
+        <div class="flex-between" style="border-bottom:var(--b-width) dashed var(--border); padding-bottom:8px; margin-bottom:8px">
+          <span>Porsi Pemilik Toko (Pengelola)</span>
+          <span style="font-weight:900; font-size:1.1rem">70%</span>
+        </div>
+        <div class="flex-between">
+          <span>Porsi Gabungan Investor</span>
+          <span style="font-weight:900; font-size:1.1rem; color:var(--primary-hover)">30%</span>
+        </div>
+      </div>
+      <p style="font-size:0.85rem; font-weight:800; margin-top:12px; color:var(--text-muted)">*Dari porsi 30% tersebut, akan dibagi lagi ke masing-masing investor sesuai dengan persentase modal awal.</p>
+    </div>
+
+    <div class="card variant-2 mb-3">
+      <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-money-bill-wave"></i> 3. Transparansi & Pencairan</h2>
+      <p style="font-size:0.95rem; font-weight:600">Semua data omzet, modal barang yang terjual, dan keuntungan ditarik secara <b>real-time</b> dari sistem kasir. Pencairan (withdraw) dilakukan secara berkala dan akan tercatat pada tab <b>Riwayat</b> agar kamu bisa memantau "Sisa Belum Cair" kapan saja.</p>
+    </div>
   `;
 }
 
