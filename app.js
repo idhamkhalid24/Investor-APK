@@ -348,26 +348,26 @@ function renderDashboard() {
   });
 
   return `
-    <div class="grid-2 mb-4">
-      <div class="card">
+    <div class="grid-2-always mb-4">
+      <div class="card variant-2">
         <div class="stat-label">Total Investasi Aktif</div>
         <div class="stat-value text-main">${rp(totalInvested)}</div>
-        <div class="text-muted" style="font-size:0.875rem;margin-top:4px">${activeBatches.length} Batch Aktif</div>
+        <div class="text-main" style="font-size:0.875rem;margin-top:4px;font-weight:700">${activeBatches.length} Batch Aktif</div>
       </div>
-      <div class="card" style="border-color: rgba(203, 168, 100, 0.4); background: radial-gradient(circle at top right, rgba(203,168,100,0.1), transparent)">
+      <div class="card variant-1">
         <div class="flex-between" style="margin-bottom:6px">
           <div class="stat-label">Estimasi Bagi Hasil (${state.statsRange} Bln)</div>
-          <div class="text-muted" style="font-size:0.75rem">Dari omzet proyek ${rp(totalProjectOmzet)}</div>
+          <div class="text-main" style="font-size:0.75rem;font-weight:700">Dari omzet proyek ${rp(totalProjectOmzet)}</div>
         </div>
-        <div class="stat-value text-primary" style="margin-bottom:12px">${rp(totalInvestorShare)}</div>
-        <div style="font-size:0.875rem; border-top:1px dashed rgba(255,255,255,0.1); padding-top:12px">
+        <div class="stat-value" style="margin-bottom:12px">${rp(totalInvestorShare)}</div>
+        <div style="font-size:0.875rem; border-top:var(--b-width) dashed var(--border); padding-top:12px; font-weight:700">
           <div class="flex-between" style="margin-bottom:4px">
-            <span class="text-muted">Telah Dicairkan</span>
-            <span style="color:var(--text-muted)">${rp(totalWithdrawn)}</span>
+            <span>Telah Dicairkan</span>
+            <span>${rp(totalWithdrawn)}</span>
           </div>
           <div class="flex-between">
-            <span class="text-muted">Sisa Belum Cair</span>
-            <span style="font-weight:700; color:${totalInvestorShare - totalWithdrawn > 0 ? 'var(--warning)' : 'var(--success)'}">${rp(totalInvestorShare - totalWithdrawn)}</span>
+            <span>Sisa Belum Cair</span>
+            <span style="font-weight:800; color:${totalInvestorShare - totalWithdrawn > 0 ? 'var(--danger)' : 'var(--success)'}">${rp(totalInvestorShare - totalWithdrawn)}</span>
           </div>
         </div>
       </div>
@@ -395,35 +395,35 @@ function renderDashboard() {
           <span class="badge ${b.status === 'active' ? 'success' : 'pending'}">${b.status === 'active' ? 'AKTIF' : 'CLOSED'}</span>
         </div>
         ${s ? `
-        <div style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; border:1px solid var(--border); margin-bottom: 12px">
-          <div class="grid-2" style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px dashed rgba(255,255,255,0.1)">
-            <div><div class="stat-label">Total Omzet Proyek</div><div style="font-weight:600;font-size:1.125rem">${rp(s.projectOmzet)}</div></div>
-            <div><div class="stat-label">Porsi Omzet Anda</div><div class="text-primary" style="font-weight:700;font-size:1.125rem">${rp(s.omzet)}</div></div>
+        <div style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); margin-bottom: 12px; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
+          <div class="grid-2" style="margin-bottom:12px; padding-bottom:12px; border-bottom:var(--b-width) dashed var(--border)">
+            <div><div class="stat-label">Total Omzet Proyek</div><div style="font-weight:800;font-size:1.125rem">${rp(s.projectOmzet)}</div></div>
+            <div><div class="stat-label">Porsi Omzet Anda</div><div style="font-weight:900;font-size:1.125rem;color:var(--text-main)">${rp(s.omzet)}</div></div>
           </div>
-          <div style="font-size:0.875rem">
+          <div style="font-size:0.875rem; font-weight:700">
             <div class="flex-between" style="margin-bottom:6px">
-              <span class="text-muted">Modal Barang Terjual</span>
+              <span>Modal Barang Terjual</span>
               <span style="color:var(--danger)">- ${rp(s.modal)}</span>
             </div>
-            <div class="flex-between" style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05)">
-              <span class="text-muted">Total Keuntungan Bersih</span>
-              <span style="color:var(--success); font-weight:600">${rp(s.netProfit)}</span>
+            <div class="flex-between" style="margin-bottom:12px; padding-bottom:8px; border-bottom:var(--b-width) solid var(--border)">
+              <span>Total Keuntungan Bersih</span>
+              <span style="color:var(--success); font-weight:800">${rp(s.netProfit)}</span>
             </div>
-            <div class="flex-between" style="margin-bottom:6px; padding-left:12px; border-left:2px solid rgba(255,255,255,0.1)">
-              <span class="text-muted">Porsi Pemilik Toko (${100 - s.persen}%)</span>
-              <span class="text-muted">${rp(s.ownerShare)}</span>
+            <div class="flex-between" style="margin-bottom:6px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
+              <span>Porsi Pemilik Toko (${100 - s.persen}%)</span>
+              <span>${rp(s.ownerShare)}</span>
             </div>
-            <div class="flex-between" style="margin-bottom:4px; padding-left:12px; border-left:2px solid var(--primary)">
-              <span class="text-primary" style="font-weight:600">Porsi Anda (${s.persen}%)</span>
-              <span class="text-primary" style="font-weight:700">${rp(s.investorShare)}</span>
+            <div class="flex-between" style="margin-bottom:4px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
+              <span style="font-weight:800">Porsi Anda (${s.persen}%)</span>
+              <span style="font-weight:900">${rp(s.investorShare)}</span>
             </div>
           </div>
         </div>
         
-        <div style="font-size:0.875rem; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px">
-          <div class="flex-between" style="margin-bottom:8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px">
-            <span style="color:var(--text-muted); font-weight: 600">Daftar Pemegang Saham:</span>
-            <span style="font-weight: 600">Total ${rp(s.members.reduce((sum, m) => sum + m.modal, 0))}</span>
+        <div style="font-size:0.875rem; background: #FFF; padding: 12px; border-radius: 8px; border: var(--b-width) solid var(--border);">
+          <div class="flex-between" style="margin-bottom:8px; border-bottom: var(--b-width) solid var(--border); padding-bottom: 4px">
+            <span style="font-weight: 800">Daftar Pemegang Saham:</span>
+            <span style="font-weight: 800">Total ${rp(s.members.reduce((sum, m) => sum + m.modal, 0))}</span>
           </div>
           ${s.members.map(m => {
             const currentTotalCapital = s.members.reduce((sum, mem) => sum + mem.modal, 0);
@@ -431,22 +431,22 @@ function renderDashboard() {
             const memberStat = state.batchStats[m.id];
             const profit = memberStat ? memberStat.investorShare : 0;
             return `
-            <div class="flex-between" style="padding:6px 0; border-bottom: 1px dashed rgba(255,255,255,0.1)">
-              <div style="text-transform:capitalize">${esc(m.name)}</div>
+            <div class="flex-between" style="padding:8px 0; border-bottom: var(--b-width) dashed var(--border)">
+              <div style="text-transform:capitalize; font-weight:800">${esc(m.name)}</div>
               <div style="text-align:right">
-                <div>${rp(m.modal)} <span style="color:var(--primary); font-size:0.75rem">(${(ratio*100).toFixed(1)}%)</span></div>
-                <div style="color:var(--success); font-size:0.8rem; font-weight:600; margin-top:2px">Profit: ${rp(profit)}</div>
+                <div style="font-weight:700">${rp(m.modal)} <span style="font-size:0.75rem">(${(ratio*100).toFixed(1)}%)</span></div>
+                <div style="color:var(--success); font-size:0.85rem; font-weight:800; margin-top:2px">Profit: ${rp(profit)}</div>
               </div>
             </div>`;
           }).join('')}
         </div>
-        ` : `<div class="text-muted text-center" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px;">Menghitung data transaksi...</div>`}
+        ` : `<div class="text-center" style="background:#FFF; padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); font-weight:800">Menghitung data transaksi...</div>`}
       </div>
       `;
     }).join('') : `
       <div class="card empty-state">
         <i class="fas fa-folder-open"></i>
-        <div>Belum ada batch investasi untuk saat ini.</div>
+        <div style="font-weight:800">Belum ada batch investasi untuk saat ini.</div>
       </div>
     `}
   `;
@@ -460,19 +460,19 @@ function renderHistory() {
         <div class="row mb-2">
           <div>
             <h2 style="font-size:1.125rem">${esc(d.investment_batches?.batch_name || 'Batch')}</h2>
-            <div class="text-muted">Periode: ${esc(d.period)}</div>
+            <div class="text-muted" style="font-weight:700">Periode: ${esc(d.period)}</div>
           </div>
           <span class="badge ${d.paid_to_investor ? 'success' : 'pending'}">${d.paid_to_investor ? 'SUDAH CAIR' : 'PENDING'}</span>
         </div>
-        <div class="row" style="background:rgba(0,0,0,0.2); padding:1rem; border-radius:12px; border:1px solid var(--border)">
-          <div><div class="stat-label">Bagian Profit</div><div class="text-primary" style="font-weight:700;font-size:1.125rem">${rp(d.investor_share_amount)}</div></div>
-          ${d.note ? `<div class="text-muted" style="font-size:0.875rem; text-align:right">Catatan:<br>${esc(d.note)}</div>` : ''}
+        <div class="row" style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
+          <div><div class="stat-label">Bagian Profit</div><div style="font-weight:900;font-size:1.125rem">${rp(d.investor_share_amount)}</div></div>
+          ${d.note ? `<div style="font-size:0.875rem; text-align:right; font-weight:700">Catatan:<br>${esc(d.note)}</div>` : ''}
         </div>
       </div>
     `).join('') : `
       <div class="card empty-state">
         <i class="fas fa-receipt"></i>
-        <div>Belum ada riwayat pencairan.</div>
+        <div style="font-weight:800">Belum ada riwayat pencairan.</div>
       </div>
     `}
   `;
