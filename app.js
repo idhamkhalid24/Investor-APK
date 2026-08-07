@@ -376,33 +376,33 @@ function renderDashboard() {
       </div>
     </div>
     
-    <div class="row mb-2">
-      <h2 class="text-main">Rincian Batch</h2>
-      <div class="row" style="gap:1rem">
-        <select class="input" style="padding: 0.5rem 2.5rem 0.5rem 1rem; width: auto; font-weight:800; font-size:0.9rem" onchange="state.statsRange=Number(this.value); refreshStats()">
-          ${[1,2,3,6,12].map(n => `<option value="${n}" ${state.statsRange===n?'selected':''}>${n} Bulan Terakhir</option>`).join('')}
-        </select>
-        <button class="btn" onclick="refreshStats()" title="Refresh Data"><i class="fas fa-rotate"></i></button>
+      <div class="row mb-2" style="flex-wrap: wrap; gap: 12px;">
+        <h2 class="text-main" style="margin: 0; line-height: 1.2;">Rincian Batch</h2>
+        <div class="row" style="gap:1rem">
+          <select class="input" style="padding: 0.5rem 2.5rem 0.5rem 1rem; width: auto; font-weight:800; font-size:0.9rem" onchange="state.statsRange=Number(this.value); refreshStats()">
+            ${[1,2,3,6,12].map(n => `<option value="${n}" ${state.statsRange===n?'selected':''}>${n} Bulan Terakhir</option>`).join('')}
+          </select>
+          <button class="btn" onclick="refreshStats()" title="Refresh Data"><i class="fas fa-rotate"></i></button>
+        </div>
       </div>
-    </div>
-    
-    ${state.batches.length ? state.batches.map(b => {
-      const s = state.batchStats[b.id];
-      return `
-      <div class="card mb-3">
-        <div class="batch-header mb-2">
-          <div>
-            <h2 style="font-size:1.125rem; margin-bottom:4px;">${esc(b.batch_name)}</h2>
+      
+      ${state.batches.length ? state.batches.map(b => {
+        const s = state.batchStats[b.id];
+        return `
+        <div class="mb-5">
+          <div class="mb-2">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+              <h2 style="font-size:1.125rem; margin:0;">${esc(b.batch_name)}</h2>
+              <span class="badge ${b.status === 'active' ? 'success' : 'pending'}">${b.status === 'active' ? 'AKTIF' : 'CLOSED'}</span>
+            </div>
             <div class="text-muted batch-modal-info">
               <span>Modal Anda: <strong style="color:var(--text-main)">${rp(b.amount_invested)}</strong></span>
               <span class="divider">&nbsp;|&nbsp;</span>
               <span>Total Proyek: <strong style="color:var(--text-main)">${rp(s ? s.totalProjectCapital : 0)}</strong></span>
             </div>
           </div>
-          <span class="badge ${b.status === 'active' ? 'success' : 'pending'}">${b.status === 'active' ? 'AKTIF' : 'CLOSED'}</span>
-        </div>
-        ${s ? `
-        <div class="batch-stats" style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); margin-bottom: 12px; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
+          ${s ? `
+          <div class="batch-stats" style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); margin-bottom: 12px; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
           <div class="grid-2" style="margin-bottom:12px; padding-bottom:12px; border-bottom:var(--b-width) dashed var(--border)">
             <div><div class="stat-label">Total Omzet Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectOmzet')"></i></div><div style="font-weight:800;font-size:1.125rem">${rp(s.projectOmzet)}</div></div>
             <div><div class="stat-label">Total Modal Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectModal')"></i></div><div style="font-weight:900;font-size:1.125rem;color:var(--danger)">- ${rp(s.projectModal)}</div></div>
