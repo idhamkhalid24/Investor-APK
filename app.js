@@ -180,20 +180,21 @@ async function computeAllBatchStats(monthsBack = 3) {
   const finalStats = {};
   allBatches.forEach(b => {
     const bName = String(b.batch_name).trim().toLowerCase();
-    finalStats[b.id] = { 
-      omzet: 0, 
-      modal: 0, 
-      netProfit: 0, 
-      investorShare: 0, 
-      ownerShare: 0, 
-      projectOmzet: 0,
-      projectInvestorShare: 0,
-      txCount: 0, 
-      persen: 30, 
-      batchName: b.batch_name,
-      members: projectMembers.get(bName) || [],
-      totalProjectCapital: 0 
-    };
+      finalStats[b.id] = { 
+        omzet: 0, 
+        modal: 0, 
+        netProfit: 0, 
+        investorShare: 0, 
+        ownerShare: 0, 
+        projectOmzet: 0,
+        projectModal: 0,
+        projectInvestorShare: 0,
+        txCount: 0, 
+        persen: 30, 
+        batchName: b.batch_name,
+        members: projectMembers.get(bName) || [],
+        totalProjectCapital: 0 
+      };
   });
 
   const productMap = new Map(state.investorProducts.map(p => [normName(p.nama_produk), p]));
@@ -242,6 +243,7 @@ async function computeAllBatchStats(monthsBack = 3) {
           
           finalStats[pb.id].omzet += (omzetLine * ratio);
           finalStats[pb.id].projectOmzet += omzetLine;
+          finalStats[pb.id].projectModal += modalLine;
           finalStats[pb.id].projectInvestorShare += invShareLine;
           finalStats[pb.id].modal += (modalLine * ratio);
           finalStats[pb.id].netProfit += (netProfitLine * ratio);
@@ -398,24 +400,28 @@ function renderDashboard() {
         ${s ? `
         <div style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); margin-bottom: 12px; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
           <div class="grid-2" style="margin-bottom:12px; padding-bottom:12px; border-bottom:var(--b-width) dashed var(--border)">
-            <div><div class="stat-label">Total Omzet Proyek</div><div style="font-weight:800;font-size:1.125rem">${rp(s.projectOmzet)}</div></div>
-            <div><div class="stat-label">Porsi Omzet Anda</div><div style="font-weight:900;font-size:1.125rem;color:var(--text-main)">${rp(s.omzet)}</div></div>
+            <div><div class="stat-label">Total Omzet Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectOmzet')"></i></div><div style="font-weight:800;font-size:1.125rem">${rp(s.projectOmzet)}</div></div>
+            <div><div class="stat-label">Total Modal Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectModal')"></i></div><div style="font-weight:900;font-size:1.125rem;color:var(--danger)">- ${rp(s.projectModal)}</div></div>
           </div>
           <div style="font-size:0.875rem; font-weight:700">
-            <div class="flex-between" style="margin-bottom:6px">
-              <span>Modal Barang Terjual</span>
-              <span style="color:var(--danger)">- ${rp(s.modal)}</span>
-            </div>
             <div class="flex-between" style="margin-bottom:12px; padding-bottom:8px; border-bottom:var(--b-width) solid var(--border)">
-              <span>Total Keuntungan Bersih</span>
-              <span style="color:var(--success); font-weight:800">${rp(s.netProfit)}</span>
+              <span>Total Keuntungan Bersih Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectNetProfit')"></i></span>
+              <span style="color:var(--success); font-weight:800">${rp(s.projectOmzet - s.projectModal)}</span>
             </div>
             <div class="flex-between" style="margin-bottom:6px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
-              <span>Porsi Pemilik Toko (${100 - s.persen}%)</span>
-              <span>${rp(s.ownerShare)}</span>
+              <span>Porsi Pemilik Toko (${100 - s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectOwnerShare')"></i></span>
+              <span>${rp((s.projectOmzet - s.projectModal) * ((100 - s.persen) / 100))}</span>
             </div>
-            <div class="flex-between" style="margin-bottom:4px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
-              <span style="font-weight:800">Porsi Anda (${s.persen}%)</span>
+            <div class="flex-between" style="margin-bottom:12px; padding-bottom:12px; padding-left:12px; border-left:var(--b-width) solid var(--border); border-bottom:var(--b-width) dashed var(--border)">
+              <span>Porsi Gabungan Investor (${s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectInvestorShare')"></i></span>
+              <span style="color:var(--primary-hover)">${rp(s.projectInvestorShare)}</span>
+            </div>
+            <div class="flex-between" style="margin-bottom:4px;">
+              <span style="font-weight:800">Porsi Saham Anda <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('investorRatio')"></i></span>
+              <span style="font-weight:800">${(Number(b.amount_invested) / (s.totalProjectCapital || 1) * 100).toFixed(1)}%</span>
+            </div>
+            <div class="flex-between" style="margin-bottom:4px;">
+              <span style="font-weight:800">Profit Anda <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('investorShare')"></i></span>
               <span style="font-weight:900">${rp(s.investorShare)}</span>
             </div>
           </div>
@@ -510,6 +516,41 @@ function renderInfo() {
     </div>
   `;
 }
+
+window.showInfo = function(type) {
+  const modal = document.getElementById('info-modal');
+  const title = document.getElementById('info-title');
+  const body = document.getElementById('info-body');
+  
+  if (type === 'projectOmzet') {
+    title.innerText = 'Total Omzet Proyek';
+    body.innerHTML = 'Total keseluruhan omzet kotor dari penjualan proyek ini.<br><br><b>Simulasi:</b> Jika 10 jilbab laku Rp 50.000, maka Total Omzet = <b>Rp 500.000</b>.';
+  } else if (type === 'projectModal') {
+    title.innerText = 'Total Modal Proyek';
+    body.innerHTML = 'Total Harga Pokok Penjualan (HPP) dari semua barang yang laku pada proyek ini.<br><br><b>Simulasi:</b> 10 jilbab laku, modal per jilbab Rp 30.000, Total Modal = <b>Rp 300.000</b>.';
+  } else if (type === 'projectNetProfit') {
+    title.innerText = 'Total Keuntungan Bersih Proyek';
+    body.innerHTML = 'Total Omzet dikurangi Total Modal.<br><br><b>Simulasi:</b> Rp 500.000 - Rp 300.000 = <b>Rp 200.000</b>.';
+  } else if (type === 'projectOwnerShare') {
+    title.innerText = 'Porsi Pemilik Toko';
+    body.innerHTML = 'Dari keuntungan bersih proyek, hak Pengelola (Pemilik Toko) adalah persentase mayoritas (contoh 70%).<br><br><b>Simulasi:</b> 70% x Rp 200.000 = <b>Rp 140.000</b>.';
+  } else if (type === 'projectInvestorShare') {
+    title.innerText = 'Porsi Gabungan Investor';
+    body.innerHTML = 'Sisa persentase dari keuntungan bersih proyek (contoh 30%) yang menjadi HAK SELURUH INVESTOR (dikumpulkan jadi satu).<br><br><b>Simulasi:</b> 30% x Rp 200.000 = <b>Rp 60.000</b>.';
+  } else if (type === 'investorRatio') {
+    title.innerText = 'Porsi Saham Anda';
+    body.innerHTML = 'Persentase saham milik Anda pribadi di batch proyek ini (Modal Anda / Total Modal Seluruh Investor di Proyek ini).<br><br><b>Simulasi:</b> Jika Anda invest Rp 8 Juta dari total Rp 10 Juta modal proyek, Porsi Anda = <b>80%</b>.';
+  } else if (type === 'investorShare') {
+    title.innerText = 'Profit Anda';
+    body.innerHTML = 'Ini adalah keuntungan murni Anda! Dihitung dengan mengalikan Porsi Saham Anda dengan Porsi Gabungan Investor.<br><br><b>Simulasi:</b> 80% (Porsi Anda) x Rp 60.000 (Porsi Gabungan) = <b>Rp 48.000</b>.';
+  }
+  
+  modal.style.display = 'flex';
+};
+
+window.closeInfo = function() {
+  document.getElementById('info-modal').style.display = 'none';
+};
 
 // ============ BOOT ============
 async function boot() {

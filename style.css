@@ -393,3 +393,7 @@ select.input {
   .grid-2-always .stat-value { font-size: 1.15rem; } 
   .grid-2-always .stat-label { font-size: 0.7rem; border-bottom: none; margin-bottom: 4px; line-height:1.2; } 
 }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+.modal-content { background: #FFF; border: var(--b-width) solid #000; padding: 1.25rem; border-radius: 8px; box-shadow: 8px 8px 0px #000; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
