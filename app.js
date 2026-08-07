@@ -350,23 +350,22 @@ function renderDashboard() {
   return `
     <div class="grid-2-always mb-4">
       <div class="card variant-2">
-        <div class="stat-label">Total Investasi Aktif</div>
+        <div class="stat-label">Investasi Aktif</div>
         <div class="stat-value text-main">${rp(totalInvested)}</div>
-        <div class="text-main" style="font-size:0.875rem;margin-top:4px;font-weight:700">${activeBatches.length} Batch Aktif</div>
+        <div class="text-main" style="font-size:0.75rem;margin-top:4px;font-weight:700">${activeBatches.length} Batch Aktif</div>
       </div>
       <div class="card variant-1">
-        <div class="flex-between" style="margin-bottom:6px">
-          <div class="stat-label">Estimasi Bagi Hasil (${state.statsRange} Bln)</div>
-          <div class="text-main" style="font-size:0.75rem;font-weight:700">Dari omzet proyek ${rp(totalProjectOmzet)}</div>
+        <div style="margin-bottom:6px">
+          <div class="stat-label">Bagi Hasil (${state.statsRange} Bln)</div>
         </div>
-        <div class="stat-value" style="margin-bottom:12px">${rp(totalInvestorShare)}</div>
-        <div style="font-size:0.875rem; border-top:var(--b-width) dashed var(--border); padding-top:12px; font-weight:700">
-          <div class="flex-between" style="margin-bottom:4px">
-            <span>Telah Dicairkan</span>
+        <div class="stat-value" style="margin-bottom:8px">${rp(totalInvestorShare)}</div>
+        <div style="font-size:0.75rem; border-top:var(--b-width) dashed var(--border); padding-top:8px; font-weight:700">
+          <div class="flex-between" style="margin-bottom:2px">
+            <span>Dicairkan</span>
             <span>${rp(totalWithdrawn)}</span>
           </div>
           <div class="flex-between">
-            <span>Sisa Belum Cair</span>
+            <span>Sisa</span>
             <span style="font-weight:800; color:${totalInvestorShare - totalWithdrawn > 0 ? 'var(--danger)' : 'var(--success)'}">${rp(totalInvestorShare - totalWithdrawn)}</span>
           </div>
         </div>
