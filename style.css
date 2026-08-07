@@ -404,3 +404,15 @@ select.input {
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
 .modal-content { background: #FFF; border: var(--b-width) solid #000; padding: 1.25rem; border-radius: 8px; box-shadow: 8px 8px 0px #000; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.3s ease; }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Responsive Batch Details */
+.batch-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.batch-modal-info { display: flex; align-items: center; font-size: 0.85rem; font-weight: 700; flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .batch-header { flex-direction: column; gap: 8px; }
+  .batch-modal-info { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .batch-modal-info .divider { display: none; }
+  .batch-stats { font-size: 0.75rem !important; padding: 0.75rem !important; }
+  .batch-stats .stat-label { font-size: 0.65rem !important; }
+  .batch-stats h2 { font-size: 1rem !important; }
+}
