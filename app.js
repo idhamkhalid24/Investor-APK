@@ -390,10 +390,10 @@ function renderDashboard() {
       const s = state.batchStats[b.id];
       return `
       <div class="card mb-3">
-        <div class="row mb-3">
+        <div class="row mb-2">
           <div>
             <h2 style="font-size:1.125rem">${esc(b.batch_name)}</h2>
-            <div class="text-muted">Modal: ${rp(b.amount_invested)}</div>
+            <div class="text-muted" style="font-size:0.85rem; font-weight:700">Modal Anda: <span style="color:var(--text-main)">${rp(b.amount_invested)}</span> &nbsp;|&nbsp; Total Modal Proyek: <span style="color:var(--text-main)">${rp(s ? s.totalProjectCapital : 0)}</span></div>
           </div>
           <span class="badge ${b.status === 'active' ? 'success' : 'pending'}">${b.status === 'active' ? 'AKTIF' : 'CLOSED'}</span>
         </div>
@@ -513,6 +513,11 @@ function renderInfo() {
     <div class="card variant-2 mb-3">
       <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-money-bill-wave"></i> 3. Transparansi & Pencairan</h2>
       <p style="font-size:0.95rem; font-weight:600">Semua data omzet, modal barang yang terjual, dan keuntungan ditarik secara <b>real-time</b> dari sistem kasir. Pencairan (withdraw) dilakukan secara berkala dan akan tercatat pada tab <b>Riwayat</b> agar kamu bisa memantau "Sisa Belum Cair" kapan saja.</p>
+    </div>
+
+    <div class="card mb-5" style="background:#FFF0F0; border-color:var(--danger)">
+      <h2 style="font-size:1.25rem; margin-bottom: 0.5rem; color:var(--danger)"><i class="fas fa-triangle-exclamation"></i> 4. Risiko Kerugian (Force Majeure)</h2>
+      <p style="font-size:0.95rem; font-weight:700; color:var(--danger)">Seperti halnya bisnis nyata, investasi ini memiliki risiko kerugian. Jika sewaktu-waktu terjadi keadaan kahar (<i>force majeure</i>), bencana, kebangkrutan, atau kendala berat operasional di luar kendali pengelola, maka <b>risiko kerugian finansial sepenuhnya ditanggung oleh pihak investor</b> tanpa tuntutan ganti rugi. Pastikan Anda mengerti dan sepenuhnya setuju dengan aturan ini sebelum memutuskan untuk berinvestasi.</p>
     </div>
   `;
 }
