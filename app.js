@@ -33,7 +33,7 @@ const state = {
   investorProducts: [],
   distributions: [],
   batchStats: {}, // batchId -> stats
-  statsRange: 3, // default 3 bulan
+  statsRange: 1, // default 1 bulan
 };
 
 function toast(msg, err = false) {
@@ -264,20 +264,29 @@ async function computeAllBatchStats(monthsBack = 3) {
 
 // ============ RENDER ============
 function renderHeader() {
+  const hasActive = state.batches && state.batches.some(b => b.status === 'active');
+  const badgeHtml = hasActive ? `<div class="badge success" style="padding: 0.4rem 0.8rem; font-size:0.8rem; display:flex; align-items:center; justify-content:center; box-sizing:border-box;">AKTIF</div>` : '';
   return `
-    <div class="header-top">
-      <div>
-        <h1 class="text-primary">Halo, ${esc(state.me.name)}</h1>
-        <div class="text-muted">Investor Portal</div>
+      <div class="header-top" style="flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h2 class="text-primary" style="margin:0; line-height:1; font-size:1.5rem; text-transform:uppercase;">Halo, ${esc(state.me.name)}</h2>
+          <div class="text-muted" style="font-size:0.8rem; margin-top:4px; font-weight:600;">Investor Portal</div>
+        </div>
+        <div style="display:flex; gap:6px; align-items:center;">
+          ${badgeHtml}
+          <select class="input" style="padding: 0.4rem 1.5rem 0.4rem 0.5rem; width: auto; font-weight:800; font-size:0.8rem;" onchange="state.statsRange=Number(this.value); refreshStats()">
+            ${[1,2,3,6,12].map(n => `<option value="${n}" ${state.statsRange===n?'selected':''}>${n} Bln</option>`).join('')}
+          </select>
+          <button class="btn" style="padding: 0.4rem 0.8rem;" onclick="refreshStats()" title="Refresh Data"><i class="fas fa-rotate"></i></button>
+          <button class="logout-btn" style="width:36px; height:36px; font-size:1rem;" onclick="logout()" title="Keluar"><i class="fas fa-right-from-bracket"></i></button>
+        </div>
       </div>
-      <button class="logout-btn" onclick="logout()" title="Keluar"><i class="fas fa-right-from-bracket"></i></button>
-    </div>
   `;
 }
 
 function renderTabBar() {
   return `
-    <div class="tabs mb-4">
+    <div class="tabs" style="margin-bottom: 12px;">
       <div class="tab ${state.page === 'dashboard' ? 'active' : ''}" onclick="go('dashboard')"><i class="fas fa-chart-pie mb-1" style="display:block"></i> Dashboard</div>
       <div class="tab ${state.page === 'history' ? 'active' : ''}" onclick="go('history')"><i class="fas fa-hand-holding-dollar mb-1" style="display:block"></i> Riwayat</div>
       <div class="tab ${state.page === 'info' ? 'active' : ''}" onclick="go('info')"><i class="fas fa-circle-info mb-1" style="display:block"></i> Cara Kerja</div>
@@ -352,7 +361,7 @@ function renderDashboard() {
   });
 
   return `
-    <div class="grid-2-always mb-4">
+    <div class="grid-2-always" style="margin-bottom: 12px;">
       <div class="card variant-2">
         <div class="stat-label">Investasi Aktif</div>
         <div class="stat-value text-main">${rp(totalInvested)}</div>
@@ -372,33 +381,20 @@ function renderDashboard() {
             <span>Sisa</span>
             <span style="font-weight:800; color:${totalInvestorShare - totalWithdrawn > 0 ? 'var(--danger)' : 'var(--success)'}">${rp(totalInvestorShare - totalWithdrawn)}</span>
           </div>
+          </div>
         </div>
       </div>
-    </div>
-    
-      <div class="row mb-2" style="flex-wrap: wrap; gap: 12px;">
-        <h2 class="text-main" style="margin: 0; line-height: 1.2;">Rincian Batch</h2>
-        <div class="row" style="gap:1rem">
-          <select class="input" style="padding: 0.5rem 2.5rem 0.5rem 1rem; width: auto; font-weight:800; font-size:0.9rem" onchange="state.statsRange=Number(this.value); refreshStats()">
-            ${[1,2,3,6,12].map(n => `<option value="${n}" ${state.statsRange===n?'selected':''}>${n} Bulan Terakhir</option>`).join('')}
-          </select>
-          <button class="btn" onclick="refreshStats()" title="Refresh Data"><i class="fas fa-rotate"></i></button>
-        </div>
-      </div>
-      
       ${state.batches.length ? state.batches.map(b => {
         const s = state.batchStats[b.id];
         return `
-        <div class="mb-5">
-          <div class="mb-2">
-            <h2 style="font-size:1.125rem; margin:0 0 4px 0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              ${esc(b.batch_name)}
-              <span class="badge ${b.status === 'active' ? 'success' : 'pending'}" style="font-size:0.7rem; padding:4px 8px;">${b.status === 'active' ? 'AKTIF' : 'CLOSED'}</span>
+        <div style="margin-bottom:12px;">
+          <div style="background:#FFF; padding:12px; border-radius:8px; border:var(--b-width) solid var(--border); margin-bottom:12px;">
+            <h2 style="font-size:1.125rem; margin:0 0 8px 0;">
+              <span style="text-transform:uppercase">${esc(b.batch_name)}</span>
             </h2>
-            <div class="text-muted batch-modal-info">
+            <div class="text-muted" style="font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center;">
               <span>Modal Anda: <strong style="color:var(--text-main)">${rp(b.amount_invested)}</strong></span>
-              <span class="divider">&nbsp;|&nbsp;</span>
-              <span>Total Proyek: <strong style="color:var(--text-main)">${rp(s ? s.totalProjectCapital : 0)}</strong></span>
+              <span style="display:inline-flex; align-items:center; gap:4px;">Total Proyek: <span class="badge" style="background:var(--primary); color:#000; padding:2px 6px; font-size:0.8rem;">${rp(s ? s.totalProjectCapital : 0)}</span></span>
             </div>
           </div>
           ${s ? `
@@ -408,18 +404,21 @@ function renderDashboard() {
             <div style="flex:1; min-width:120px;"><div class="stat-label">Total Modal Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectModal')"></i></div><div style="font-weight:900;font-size:1.125rem;color:var(--danger)">- ${rp(s.projectModal)}</div></div>
           </div>
           <div style="font-size:0.875rem; font-weight:700">
-            <div class="flex-between" style="margin-bottom:12px; padding-bottom:8px; border-bottom:var(--b-width) solid var(--border)">
+            <div class="flex-between" style="margin-bottom:12px; padding-bottom:12px; border-bottom:var(--b-width) solid var(--border)">
               <span>Total Keuntungan Bersih Proyek <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectNetProfit')"></i></span>
-              <span style="color:var(--success); font-weight:800">${rp(s.projectOmzet - s.projectModal)}</span>
+              <span style="color:#059669; font-weight:800">${rp(s.projectOmzet - s.projectModal)}</span>
             </div>
-            <div class="flex-between" style="margin-bottom:6px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
-              <span>Porsi Pemilik Toko (${100 - s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectOwnerShare')"></i></span>
-              <span>${rp((s.projectOmzet - s.projectModal) * ((100 - s.persen) / 100))}</span>
+            <div style="margin-bottom:16px;">
+              <div class="flex-between" style="margin-bottom:6px; padding-left:12px; border-left:var(--b-width) solid var(--border)">
+                <span>Porsi Pemilik Toko (${100 - s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectOwnerShare')"></i></span>
+                <span>${rp((s.projectOmzet - s.projectModal) * ((100 - s.persen) / 100))}</span>
+              </div>
+              <div class="flex-between" style="padding-left:12px; border-left:var(--b-width) solid var(--border)">
+                <span>Porsi Gabungan Investor (${s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectInvestorShare')"></i></span>
+                <span style="color:#B45309">${rp(s.projectInvestorShare)}</span>
+              </div>
             </div>
-            <div class="flex-between" style="margin-bottom:12px; padding-bottom:12px; padding-left:12px; border-left:var(--b-width) solid var(--border); border-bottom:var(--b-width) dashed var(--border)">
-              <span>Porsi Gabungan Investor (${s.persen}%) <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('projectInvestorShare')"></i></span>
-              <span style="color:var(--primary-hover)">${rp(s.projectInvestorShare)}</span>
-            </div>
+            <div style="border-top:var(--b-width) dashed var(--border); margin: 16px 0;"></div>
             <div class="flex-between" style="margin-bottom:4px;">
               <span style="font-weight:800">Porsi Saham Anda <i class="fas fa-circle-info text-muted" style="cursor:pointer" onclick="showInfo('investorRatio')"></i></span>
               <span style="font-weight:800">${(Number(b.amount_invested) / (s.totalProjectCapital || 1) * 100).toFixed(1)}%</span>
@@ -446,7 +445,7 @@ function renderDashboard() {
               <div style="text-transform:capitalize; font-weight:800">${esc(m.name)}</div>
               <div style="text-align:right">
                 <div style="font-weight:700">${rp(m.modal)} <span style="font-size:0.75rem">(${(ratio*100).toFixed(1)}%)</span></div>
-                <div style="color:var(--success); font-size:0.85rem; font-weight:800; margin-top:2px">Profit: ${rp(profit)}</div>
+                <div style="color:#059669; font-size:0.85rem; font-weight:800; margin-top:2px">Profit: ${rp(profit)}</div>
               </div>
             </div>`;
           }).join('')}
@@ -508,7 +507,7 @@ function renderInfo() {
         </div>
         <div class="flex-between">
           <span>Porsi Gabungan Investor</span>
-          <span style="font-weight:900; font-size:1.1rem; color:var(--primary-hover)">30%</span>
+          <span style="font-weight:900; font-size:1.1rem; color:#B45309">30%</span>
         </div>
       </div>
       <p style="font-size:0.85rem; font-weight:800; margin-top:12px; color:var(--text-muted)">*Dari porsi 30% tersebut, akan dibagi lagi ke masing-masing investor sesuai dengan persentase modal awal.</p>
