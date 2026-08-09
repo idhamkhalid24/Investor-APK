@@ -93,7 +93,7 @@ window.attemptLogin = async function () {
   try {
     const { data, error } = await sb.from('investors').select('*').ilike('name', username).eq('pin', pin).single();
     if (data) {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
       boot();
     } else {
       toast('Username atau PIN salah', true);
@@ -106,7 +106,7 @@ window.attemptLogin = async function () {
 };
 
 window.logout = function () {
-  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
   state.me = null;
   renderPinScreen();
 };
@@ -564,7 +564,7 @@ window.closeInfo = function() {
 async function boot() {
   setBusy(true);
   try {
-    const session = sessionStorage.getItem(SESSION_KEY);
+    const session = localStorage.getItem(SESSION_KEY);
     if (!session) return renderPinScreen();
     
     state.me = JSON.parse(session);
