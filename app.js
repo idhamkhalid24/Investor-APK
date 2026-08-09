@@ -497,21 +497,21 @@ function renderInfo() {
       <p style="font-size:0.95rem; font-weight:600">Kamu bertindak sebagai pemodal (investor) yang menyuntikkan dana pada sebuah <b>Batch Proyek</b>. Total Modal Proyek adalah gabungan dari modal kamu dan investor lain di batch tersebut. Persentase saham kamu dihitung dari (Modal Kamu / Total Modal Proyek).</p>
     </div>
 
-    <div class="card variant-1 mb-3">
-      <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-chart-pie"></i> 2. Skema Bagi Hasil (70:30)</h2>
-      <p style="font-size:0.95rem; font-weight:600; margin-bottom: 12px">Omzet proyek yang didapat akan dikurangi dengan Modal Barang (HPP) untuk mendapatkan <b>Keuntungan Bersih (Net Profit)</b>.</p>
-      <div style="background:#FFF; padding:12px; border-radius:8px; border:var(--b-width) solid var(--border); font-weight:700; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
-        <div class="flex-between" style="border-bottom:var(--b-width) dashed var(--border); padding-bottom:8px; margin-bottom:8px">
-          <span>Porsi Pemilik Toko (Pengelola)</span>
-          <span style="font-weight:900; font-size:1.1rem">70%</span>
+      <div class="card variant-1 mb-3">
+        <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-chart-pie"></i> 2. Skema Bagi Hasil (Sesuai Batch)</h2>
+        <p style="font-size:0.95rem; font-weight:600; margin-bottom: 12px">Omzet proyek yang didapat akan dikurangi dengan Modal Barang (HPP) untuk mendapatkan <b>Keuntungan Bersih (Net Profit)</b>.</p>
+        <div style="background:#FFF; padding:12px; border-radius:8px; border:var(--b-width) solid var(--border); font-weight:700; box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
+          <div class="flex-between" style="border-bottom:var(--b-width) dashed var(--border); padding-bottom:8px; margin-bottom:8px">
+            <span>Porsi Pemilik Toko (Pengelola)</span>
+            <span style="font-weight:900; font-size:1.1rem">Mayoritas</span>
+          </div>
+          <div class="flex-between">
+            <span>Porsi Gabungan Investor</span>
+            <span style="font-weight:900; font-size:1.1rem; color:#B45309">Sesuai Kontrak</span>
+          </div>
         </div>
-        <div class="flex-between">
-          <span>Porsi Gabungan Investor</span>
-          <span style="font-weight:900; font-size:1.1rem; color:#B45309">30%</span>
-        </div>
+        <p style="font-size:0.85rem; font-weight:800; margin-top:12px; color:var(--text-muted)">*Dari porsi Gabungan Investor tersebut, akan dibagi lagi ke masing-masing investor sesuai dengan persentase modal awal.</p>
       </div>
-      <p style="font-size:0.85rem; font-weight:800; margin-top:12px; color:var(--text-muted)">*Dari porsi 30% tersebut, akan dibagi lagi ke masing-masing investor sesuai dengan persentase modal awal.</p>
-    </div>
 
     <div class="card variant-2 mb-3">
       <h2 style="font-size:1.25rem; margin-bottom: 0.5rem"><i class="fas fa-money-bill-wave"></i> 3. Transparansi & Pencairan</h2>
@@ -541,10 +541,10 @@ window.showInfo = function(type) {
     body.innerHTML = 'Total Omzet dikurangi Total Modal.<br><br><b>Simulasi:</b> Rp 500.000 - Rp 300.000 = <b>Rp 200.000</b>.';
   } else if (type === 'projectOwnerShare') {
     title.innerText = 'Porsi Pemilik Toko';
-    body.innerHTML = 'Dari keuntungan bersih proyek, hak Pengelola (Pemilik Toko) adalah persentase mayoritas (contoh 70%).<br><br><b>Simulasi:</b> 70% x Rp 200.000 = <b>Rp 140.000</b>.';
+    body.innerHTML = 'Dari keuntungan bersih proyek, hak Pengelola (Pemilik Toko) adalah persentase mayoritas. Persentase ini <b>dinamis dan bisa disesuaikan</b> sewaktu-waktu untuk menutupi biaya operasional (karyawan, listrik, dll).<br><br><b>Simulasi (Misal 70%):</b> 70% x Rp 200.000 = <b>Rp 140.000</b>.';
   } else if (type === 'projectInvestorShare') {
     title.innerText = 'Porsi Gabungan Investor';
-    body.innerHTML = 'Sisa persentase dari keuntungan bersih proyek (contoh 30%) yang menjadi HAK SELURUH INVESTOR (dikumpulkan jadi satu).<br><br><b>Simulasi:</b> 30% x Rp 200.000 = <b>Rp 60.000</b>.';
+    body.innerHTML = 'Sisa persentase dari keuntungan bersih proyek (sesuai kontrak) yang menjadi HAK SELURUH INVESTOR (dikumpulkan jadi satu). Nilai persentase ini akan menyesuaikan dengan kondisi biaya operasional toko.<br><br><b>Simulasi (Misal 30%):</b> 30% x Rp 200.000 = <b>Rp 60.000</b>.';
   } else if (type === 'investorRatio') {
     title.innerText = 'Porsi Saham Anda';
     body.innerHTML = 'Persentase saham milik Anda pribadi di batch proyek ini (Modal Anda / Total Modal Seluruh Investor di Proyek ini).<br><br><b>Simulasi:</b> Jika Anda invest Rp 8 Juta dari total Rp 10 Juta modal proyek, Porsi Anda = <b>80%</b>.';
@@ -572,6 +572,21 @@ async function boot() {
     await loadBatches();
     await loadInvestorProducts();
     await loadDistributions();
+    
+    // Register FCM token with Android bridge (for push notifications)
+    try {
+      if (window.InvestorAndroid && window.InvestorAndroid.setInvestorSession) {
+        const sessionPayload = JSON.stringify({
+          investorId: String(state.me.id || ''),
+          name: String(state.me.name || ''),
+          products: state.batches.map(b => String(b.batch_name || '').trim().toLowerCase()).filter(Boolean)
+        });
+        window.InvestorAndroid.setInvestorSession(sessionPayload);
+        console.log('[FCM] Investor session sent to Android:', sessionPayload);
+      }
+    } catch (fcmErr) {
+      console.warn('[FCM] Failed to set investor session:', fcmErr);
+    }
     
     render();
     
