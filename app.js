@@ -55,25 +55,84 @@ function setBusy(v) {
 
 // ============ AUTH (PIN) ============
 let pinBuffer = '';
-function renderPinScreen() {
-  $('app').innerHTML = `
-    <div class="login-screen">
-      <div class="login-card">
-        <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
-        <h1 class="mb-1 text-primary">Investor Portal</h1>
-        <div class="text-muted mb-4">Masukkan Username dan PIN Anda</div>
-        
-        <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 24px;">
-          <input type="text" id="loginUsername" class="input" placeholder="Username (contoh: aji)" style="text-align:center;font-weight:bold;text-transform:lowercase; padding:12px">
-          <div style="position:relative">
-            <input type="password" pattern="[0-9]*" inputmode="numeric" id="loginPin" class="input" placeholder="PIN Angka" style="text-align:center;font-weight:bold;letter-spacing:4px; padding:12px; width:100%; box-sizing:border-box" onkeydown="if(event.key==='Enter') attemptLogin()">
-            <button onclick="togglePin()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer"><i id="eyeIcon" class="fas fa-eye"></i></button>
+window.renderPinScreen = function(showRegister = false) {
+  if (showRegister) {
+    $('app').innerHTML = `
+      <div class="login-screen">
+        <div class="login-card">
+          <div class="logo-icon"><i class="fas fa-user-plus"></i></div>
+          <h1 class="mb-1 text-primary">Daftar Investor</h1>
+          <div class="text-muted mb-4">Minta akses ke Admin via WhatsApp</div>
+          
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 24px;">
+            <input type="text" id="regUsername" class="input" placeholder="Pilih Username (contoh: aji)" style="text-align:center;font-weight:bold;text-transform:lowercase; padding:12px">
+            <input type="email" id="regEmail" class="input" placeholder="Alamat Email" style="text-align:center;font-weight:bold; padding:12px">
+          </div>
+          <button class="btn success full" style="padding:14px; margin-bottom:16px;" onclick="sendWaRegistration()"><i class="fab fa-whatsapp" style="font-size:1.2rem; margin-right:4px;"></i> Minta Password ke Admin</button>
+          <div style="text-align:center; font-size:0.85rem; font-weight:700;">
+            <a href="#" style="color:var(--text-muted); text-decoration:none;" onclick="event.preventDefault(); renderPinScreen(false)">Sudah punya akun? Masuk di sini</a>
           </div>
         </div>
-        <button class="btn success full" style="padding:14px" onclick="attemptLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
       </div>
-    </div>
-  `;
+    `;
+  } else {
+    $('app').innerHTML = `
+      <div class="login-screen">
+        <div class="login-card">
+          <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+          <h1 class="mb-1 text-primary">Investor Portal</h1>
+          <div class="text-muted mb-4">Masukkan Username dan PIN Anda</div>
+          
+          <div style="display:flex; flex-direction:column; gap:12px; margin-bottom: 24px;">
+            <input type="text" id="loginUsername" class="input" placeholder="Username (contoh: aji)" style="text-align:center;font-weight:bold;text-transform:lowercase; padding:12px">
+            <div style="position:relative">
+              <input type="password" pattern="[0-9]*" inputmode="numeric" id="loginPin" class="input" placeholder="PIN Angka" style="text-align:center;font-weight:bold;letter-spacing:4px; padding:12px; width:100%; box-sizing:border-box" onkeydown="if(event.key==='Enter') attemptLogin()">
+              <button onclick="togglePin()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-muted); cursor:pointer"><i id="eyeIcon" class="fas fa-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn success full" style="padding:14px; margin-bottom:16px;" onclick="attemptLogin()"><i class="fas fa-sign-in-alt"></i> Masuk</button>
+          <div style="text-align:center; font-size:0.85rem; font-weight:700;">
+            <a href="#" style="color:var(--text-muted); text-decoration:none;" onclick="event.preventDefault(); renderPinScreen(true)">Belum punya akun? Daftar di sini</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+window.sendWaRegistration = async function() {
+  const username = $('regUsername').value.trim();
+  const email = $('regEmail').value.trim();
+  
+  if (!username || !email) {
+    alert('Harap isi Username dan Email terlebih dahulu!');
+    return;
+  }
+  
+  try {
+    // Cek apakah username sudah ada
+    const { data: existing } = await sb.from('investors').select('id').ilike('name', username).maybeSingle();
+    if (existing) {
+      alert('Username ini sudah dipakai. Silakan pilih username lain.');
+      return;
+    }
+    
+    // Insert sebagai PENDING
+    const { error } = await sb.from('investors').insert([{ 
+      name: username, 
+      phone: email, 
+      pin: 'PENDING' 
+    }]);
+    
+    if (error) throw error;
+    
+    const text = `Halo Admin, saya mau daftar Investor Portal.%0A%0AUsername: ${username}%0AEmail: ${email}%0A%0AMohon infokan Password/PIN saya. Terima kasih.`;
+    window.open(`https://wa.me/6285172107731?text=${text}`, '_blank');
+    alert('Permintaan pendaftaran berhasil dikirim ke Admin!');
+    renderPinScreen(false); // kembali ke layar login
+  } catch (err) {
+    alert('Terjadi kesalahan sistem: ' + err.message);
+  }
 }
 
 window.togglePin = function() {
