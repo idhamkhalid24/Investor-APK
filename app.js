@@ -194,8 +194,8 @@ window.attemptLogin = async function () {
     } else {
       toast('Username atau PIN salah', true);
     }
-  } catch (e) {
-    toast('Username atau PIN salah', true);
+  } catch (err) {
+    alert(err.message);
   } finally {
     setBusy(false);
   }
@@ -774,7 +774,9 @@ async function loadMyPurchases() {
     .eq('investor_id', state.me.id)
     .order('created_at', { ascending: false })
     .limit(20);
-  if (!error) state.myPurchases = data || [];
+  if (!error) {
+    state.myPurchases = data || [];
+  }
 }
 
 
@@ -832,7 +834,7 @@ function renderBuyLot() {
               <span>${p.lots} lot • ${rp(p.amount)}</span>
               <span class="badge ${approvalBadge}" style="font-size:0.7rem;">${p.approval_status === 'approved' ? 'DISETUJUI' : p.approval_status === 'rejected' ? 'DITOLAK' : 'MENUNGGU ADMIN'}</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Aktif: ${esc(p.investment_batch_catalog?.active_month || '-')} • ${new Date(p.created_at).toLocaleDateString('id-ID')}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Aktif: ${esc(p.investment_batch_catalog?.active_month || '-')}   ${new Date(p.created_at).toLocaleDateString('id-ID')}</div>
           </div>`;
       }).join('');
 
