@@ -867,82 +867,106 @@ window.buyLot = async function(catalogId, batchName, pricePerLot, maxLots) {
   }
   
   const amount = lots * pricePerLot;
-  if (!confirm(`Beli ${lots} lot di batch ${batchName} senilai ${rp(amount)}?`)) return;
   
-  setBusy(true);
-  try {
-    const { data: trx, error: errTrx } = await sb.from('investment_purchases').insert([{
-      investor_id: state.me.id,
-      catalog_id: catalogId,
-      lots: lots,
-      amount: amount,
-      payment_status: 'pending',
-      approval_status: 'waiting'
-    }]).select().single();
-    if (errTrx) throw errTrx;
-    
-    // Request Snap Token dari Cloudflare Worker
-    const res = await fetch(MIDTRANS_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        order_id: trx.id,
-        gross_amount: amount,
-        first_name: state.me.name,
-        email: state.me.email || 'investor@rockyhijab.com',
-        phone: state.me.phone || '08000000000'
-      })
-    });
-    
-    if (!res.ok) throw new Error('Gagal menghubungi server pembayaran');
-    const data = await res.json();
-    
-    if (!data.token) {
-      const errMsg = data.error_messages ? data.error_messages.join(', ') : JSON.stringify(data);
-      throw new Error('Gagal mendapatkan token Midtrans: ' + errMsg);
-    }
-    
-    // Simpan snap token ke database
-    await sb.from('investment_purchases').update({ midtrans_snap_token: data.token }).eq('id', trx.id);
-    
-    // Tampilkan popup Snap
-    if (window.snap) {
-      window.snap.pay(data.token, {
-        onSuccess: async function(result) {
-          // Update status pembayaran jadi paid
-          await sb.from('investment_purchases').update({ 
-            payment_status: 'paid',
-            midtrans_order_id: result.order_id,
-            paid_at: new Date().toISOString()
-          }).eq('id', trx.id);
-          
-          toast('Pembayaran berhasil! Menunggu konfirmasi admin.');
-          await loadMyPurchases();
-          await loadCatalog();
-          render();
-        },
-        onPending: async function(result) {
-          toast('Pembayaran tertunda. Silakan selesaikan pembayaran.');
-          await loadMyPurchases();
-          render();
-        },
-        onError: function(result) {
-          toast('Pembayaran gagal. Silakan coba lagi.', true);
-        },
-        onClose: function() {
-          toast('Popup pembayaran ditutup.');
-        }
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.position = 'fixed';
+  modal.style.inset = '0';
+  modal.style.background = 'rgba(0,0,0,0.6)';
+  modal.style.display = 'flex';
+  modal.style.justifyContent = 'center';
+  modal.style.alignItems = 'center';
+  modal.style.zIndex = '99999';
+  modal.style.padding = '20px';
+  modal.innerHTML = `
+    <div class="modal-content" style="background:#fff;border:3px solid #000;border-radius:8px;padding:20px;width:90%;max-width:320px;text-align:center;">
+      <h3 style="margin-top:0;font-size:1.2rem;">Konfirmasi Pembelian</h3>
+      <p style="font-size:0.95rem;margin-bottom:20px;">Beli <strong>${lots} lot</strong> di batch <strong>${batchName}</strong> senilai <br><strong style="font-size:1.1rem;color:var(--primary-dark)">${rp(amount)}</strong>?</p>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" style="flex:1" onclick="this.closest('.modal').remove()">Batal</button>
+        <button class="btn primary" style="flex:1" id="confirmBuyBtn">Beli Sekarang</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  modal.querySelector('#confirmBuyBtn').onclick = async () => {
+    modal.remove();
+    setBusy(true);
+    try {
+      const { data: trx, error: errTrx } = await sb.from('investment_purchases').insert([{
+        investor_id: state.me.id,
+        catalog_id: catalogId,
+        lots: lots,
+        amount: amount,
+        payment_status: 'pending',
+        approval_status: 'waiting'
+      }]).select().single();
+      if (errTrx) throw errTrx;
+      
+      // Request Snap Token dari Cloudflare Worker
+      const res = await fetch(MIDTRANS_WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: trx.id,
+          gross_amount: amount,
+          first_name: state.me.name,
+          email: state.me.email || 'investor@rockyhijab.com',
+          phone: state.me.phone || '08000000000'
+        })
       });
-    } else {
-      toast('Sistem pembayaran Midtrans belum termuat, hubungi admin.');
+      
+      if (!res.ok) throw new Error('Gagal menghubungi server pembayaran');
+      const data = await res.json();
+      
+      if (!data.token) {
+        const errMsg = data.error_messages ? data.error_messages.join(', ') : JSON.stringify(data);
+        throw new Error('Gagal mendapatkan token Midtrans: ' + errMsg);
+      }
+      
+      // Simpan snap token ke database
+      await sb.from('investment_purchases').update({ midtrans_snap_token: data.token }).eq('id', trx.id);
+      
+      // Tampilkan popup Snap
+      if (window.snap) {
+        window.snap.pay(data.token, {
+          onSuccess: async function(result) {
+            // Update status pembayaran jadi paid
+            await sb.from('investment_purchases').update({ 
+              payment_status: 'paid',
+              midtrans_order_id: result.order_id,
+              paid_at: new Date().toISOString()
+            }).eq('id', trx.id);
+            
+            toast('Pembayaran berhasil! Menunggu konfirmasi admin.');
+            await loadMyPurchases();
+            await loadCatalog();
+            render();
+          },
+          onPending: async function(result) {
+            toast('Pembayaran tertunda. Silakan selesaikan pembayaran.');
+            await loadMyPurchases();
+            render();
+          },
+          onError: function(result) {
+            toast('Pembayaran gagal. Silakan coba lagi.', true);
+          },
+          onClose: function() {
+            toast('Popup pembayaran ditutup.');
+          }
+        });
+      } else {
+        toast('Sistem pembayaran Midtrans belum termuat, hubungi admin.');
+      }
+      
+    } catch(e) {
+      console.error(e);
+      toast('Gagal memproses pembelian: ' + (e.message || ''), true);
+    } finally {
+      setBusy(false);
     }
-    
-  } catch(e) {
-    console.error(e);
-    toast('Gagal memproses pembelian: ' + (e.message || ''), true);
-  } finally {
-    setBusy(false);
-  }
+  };
 };
 
 async function loadDistributions() {
