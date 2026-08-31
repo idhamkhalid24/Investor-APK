@@ -159,8 +159,8 @@ window.init = async function(pin) {
     localStorage.setItem(SESSION_KEY, inv.pin);
     
     // Load data
+    await loadBatches();
     await Promise.all([
-      loadBatches(), 
       loadInvestorProducts(), 
       loadProjects(),
       loadDistributions(),
@@ -501,7 +501,7 @@ function renderDashboard() {
   
   let totalWithdrawn = 0;
   state.distributions.forEach(d => {
-    if (new Date(d.created_at) >= dateLimit) {
+    if (new Date(d.created_at) >= dateLimit && d.paid_to_investor) {
       totalWithdrawn += Number(d.investor_share_amount || 0);
     }
   });
@@ -968,42 +968,6 @@ window.buyLot = async function(catalogId, batchName, pricePerLot, maxLots) {
     }
   };
 };
-
-async function loadDistributions() {
-  if (!state.me) return;
-  const { data, error } = await sb.from('investor_distributions')
-    .select('*')
-    .eq('investor_id', state.me.id)
-    .order('created_at', { ascending: false });
-  if (!error) state.distributions = data || [];
-}
-
-function renderDistributions() {
-  const dists = state.distributions || [];
-  return `
-    <h2 class="text-main mb-3">Riwayat Pencairan</h2>
-    ${dists.length > 0 ? dists.map(d => `
-      <div class="card mb-3">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:var(--b-width) dashed var(--border); padding-bottom:8px;">
-          <div>
-            <div style="font-weight:900;font-size:1.1rem;color:var(--primary)">${esc(d.month_key)}</div>
-            <div style="font-size:0.85rem;color:var(--text-muted)">${new Date(d.created_at).toLocaleDateString('id-ID')}</div>
-          </div>
-          <span class="badge ${d.paid_to_investor ? 'success' : 'pending'}">${d.paid_to_investor ? 'SUDAH CAIR' : 'PENDING'}</span>
-        </div>
-        <div class="row" style="background:var(--bg-body); padding:1rem; border-radius:8px; border:var(--b-width) solid var(--border); box-shadow: inset 3px 3px 0px rgba(0,0,0,0.05)">
-          <div><div class="stat-label">Bagian Profit</div><div style="font-weight:900;font-size:1.125rem">${rp(d.investor_share_amount)}</div></div>
-          ${d.note ? `<div style="font-size:0.875rem; text-align:right; font-weight:700">Catatan:<br>${esc(d.note)}</div>` : ''}
-        </div>
-      </div>
-    `).join('') : `
-      <div class="card empty-state">
-        <i class="fas fa-receipt"></i>
-        <div style="font-weight:800">Belum ada riwayat pencairan.</div>
-      </div>
-    `}
-  `;
-}
 
 function renderInfo() {
   return `
